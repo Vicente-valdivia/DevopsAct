@@ -18,7 +18,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      # Configuración de Java 21 para el proyecto y Sonar
+      # Configuración de Java 21 (Requerido para el proyecto y SonarCloud)
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
@@ -46,7 +46,7 @@ jobs:
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.login=${SONAR_TOKEN}
 
-      # Gestión de imagen Docker
+      # Gestión de imagen Docker y Login en DockerHub
       - name: Log in to DockerHub
         uses: docker/login-action@v3
         with:
@@ -79,6 +79,7 @@ jobs:
       - name: SSH commands to deploy
         run: |
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ${{ secrets.USER_SERVER }}@${{ secrets.EC2_HOST }} << 'EOF'
+            # Autenticación y actualización del contenedor en el servidor
             echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/my-app:latest
             docker stop my-app || true && docker rm my-app || true
